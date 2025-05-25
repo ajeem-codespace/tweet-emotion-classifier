@@ -13,7 +13,7 @@ Predicts one of six emotions: Sadness, Joy, Love, Anger, Fear, Surprise.
 
 **(Screenshot of the Application)**
 
-![EmotionSense Screenshot](assets/screenshots/1_screenshot.png)
+![EmotionSense Screenshot](assets/1_screenshot.png)
 
 
 
