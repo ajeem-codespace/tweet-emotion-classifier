@@ -8,25 +8,31 @@ from nltk.stem import WordNetLemmatizer
 import os
 import pandas as pd 
 
-# These will only download if not found, quiet=True suppresses verbose output.
-nltk_resources = ['stopwords', 'punkt', 'wordnet']
-for resource_name_key in nltk_resources: # Renamed variable to avoid conflict with 'resource' module if imported
+# Attempt to download necessary NLTK data if not already present.
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    print("NLTK resource 'stopwords' not found. Downloading...")
+    nltk.download('stopwords', quiet=True) 
+try:
+    nltk.data.find('tokenizers/punkt')
+    print("NLTK resource 'punkt' found.") 
+except LookupError:
+    print("NLTK resource 'punkt' not found. Downloading with verbose output...")
+    nltk.download('punkt', quiet=False) 
+    print("Attempted 'punkt' download.")
+    
     try:
-        # Construct the path NLTK expects for find()
-        if resource_name_key == 'punkt':
-            resource_path = f'tokenizers/{resource_name_key}'
-        elif resource_name_key == 'wordnet': # wordnet is often under 'corpora'
-             resource_path = f'corpora/{resource_name_key}'
-        else: # stopwords is under 'corpora'
-            resource_path = f'corpora/{resource_name_key}'
-        
-        nltk.data.find(resource_path)
-        # print(f"NLTK resource '{resource_name_key}' found at: {nltk.data.find(resource_path)}") # Optional: for debugging
-    except LookupError: # <--- CHANGED TO LookupError
-        print(f"NLTK resource '{resource_name_key}' not found. Downloading...")
-        nltk.download(resource_name_key, quiet=True)
-    except Exception as e: # Catch any other unexpected error during find/download
-        print(f"An unexpected error occurred with NLTK resource '{resource_name_key}': {e}")
+        nltk.data.find('tokenizers/punkt')
+        print("NLTK resource 'punkt' found after download attempt.")
+    except LookupError:
+        print("CRITICAL: NLTK resource 'punkt' STILL not found after download attempt. This is likely the cause of the error.")
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    print("NLTK resource 'wordnet' not found. Downloading...")
+    nltk.download('wordnet', quiet=True)
+
 
 # Preprocessing Function & Tools
 lemmatizer = WordNetLemmatizer()
