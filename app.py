@@ -8,31 +8,28 @@ from nltk.stem import WordNetLemmatizer
 import os
 import pandas as pd 
 
-# Attempt to download necessary NLTK data if not already present.
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    print("NLTK resource 'stopwords' not found. Downloading...")
-    nltk.download('stopwords', quiet=True) 
-try:
-    nltk.data.find('tokenizers/punkt')
-    print("NLTK resource 'punkt' found.") 
-except LookupError:
-    print("NLTK resource 'punkt' not found. Downloading with verbose output...")
-    nltk.download('punkt', quiet=False) 
-    print("Attempted 'punkt' download.")
-    
-    try:
-        nltk.data.find('tokenizers/punkt')
-        print("NLTK resource 'punkt' found after download attempt.")
-    except LookupError:
-        print("CRITICAL: NLTK resource 'punkt' STILL not found after download attempt. This is likely the cause of the error.")
-try:
-    nltk.data.find('corpora/wordnet')
-except LookupError:
-    print("NLTK resource 'wordnet' not found. Downloading...")
-    nltk.download('wordnet', quiet=True)
 
+nltk_packages_to_download = ['stopwords', 'punkt', 'wordnet']
+print("Attempting to ensure NLTK packages are available...") # General print statement
+
+for package_name in nltk_packages_to_download:
+    try:
+        if package_name == "punkt":
+            print(f"Checking and downloading NLTK package: '{package_name}' (verbose)...")
+            # For 'punkt', run with verbose output to see details in Streamlit logs
+            nltk.download(package_name, quiet=False)
+        else:
+            # For other packages, quiet can be True if they are less problematic
+            # print(f"Checking and downloading NLTK package: '{package_name}' (quiet)...") # Optional
+            nltk.download(package_name, quiet=True)
+        print(f"NLTK package '{package_name}' checked/downloaded.")
+    except Exception as e:
+        # This will catch download errors or other NLTK issues during the download attempt itself.
+        error_message = f"CRITICAL ERROR downloading/ensuring NLTK package '{package_name}': {e}. The app will likely fail."
+        print(error_message)
+        st.error(error_message) # Display error in the Streamlit app UI as well
+        st.stop() # Stop the app if a critical NLTK package download fails
+print("NLTK package check complete.")
 
 # Preprocessing Function & Tools
 lemmatizer = WordNetLemmatizer()
