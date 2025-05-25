@@ -10,16 +10,42 @@ import pandas as pd
 
 
 nltk_packages = ['stopwords', 'punkt', 'wordnet']
+print("Attempting to ensure NLTK packages are available...") # For logs
+
 for package_id in nltk_packages:
     try:
-        if package_id == 'punkt': 
-            nltk.data.find(f'tokenizers/{package_id}')
-        elif package_id in ['stopwords', 'wordnet']:
-            nltk.data.find(f'corpora/{package_id}')
-    except nltk.downloader.DownloadError: 
-        nltk.download(package_id, quiet=False if package_id == 'punkt' else True)
-    except LookupError: 
-        nltk.download(package_id, quiet=False if package_id == 'punkt' else True)
+        # Determine the correct path pattern for nltk.data.find()
+        if package_id == 'punkt':
+            path_to_check = f'tokenizers/{package_id}'
+        elif package_id in ['stopwords', 'wordnet']: # Corrected 'in'
+            path_to_check = f'corpora/{package_id}'
+        else: # Should not happen with the current nltk_packages list
+            path_to_check = f'misc/{package_id}' # Fallback, though unlikely needed
+        
+        nltk.data.find(path_to_check)
+        print(f"NLTK: Resource '{package_id}' found.")
+    except LookupError: # This is the correct exception to catch for nltk.data.find()
+        print(f"NLTK: Resource '{package_id}' not found. Attempting download...")
+        # For 'punkt', download with verbose output to see details in Streamlit logs
+        # For other packages, quiet=True is generally fine.
+        is_punkt_and_verbose = (package_id == 'punkt')
+        try:
+            nltk.download(package_id, quiet=(not is_punkt_and_verbose))
+            # Verify after download attempt
+            nltk.data.find(path_to_check)
+            print(f"NLTK: Resource '{package_id}' successfully downloaded and available.")
+        except Exception as e_download: # Catch any error during download or re-check
+            error_msg = f"NLTK: CRITICAL ERROR for '{package_id}'. Download or verification failed: {str(e_download)}"
+            print(error_msg)
+            st.error(error_msg)
+            if package_id == 'punkt': # If 'punkt' fails, the app is likely unusable
+                st.warning("The 'punkt' tokenizer (essential for text processing) failed to load. The app might not function correctly.")
+                st.stop() # Stop the app if 'punkt' is critical and fails
+    except Exception as e_outer: # Catch any other unexpected error
+        error_msg_outer = f"NLTK: Unexpected error checking for '{package_id}': {str(e_outer)}"
+        print(error_msg_outer)
+        st.error(error_msg_outer)
+
 
 
 
